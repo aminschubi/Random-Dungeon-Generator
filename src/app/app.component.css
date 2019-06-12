@@ -1,0 +1,29 @@
+#mainWindow {
+  width: 1040px;
+  height: 715px;
+}
+
+#canvas {
+  border: 10px ridge #000000;
+  float: right;
+}
+
+#controls {
+  width: 250px;
+  height: 750px;
+  border: 10px ridge #000000;
+  float: left;
+  text-align: center;
+}
+
+#randlevel {
+  -webkit-appearance: none;
+  width: 80%;
+  height: 10px;
+  border-radius: 5px;
+  background: #70b2cc;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
