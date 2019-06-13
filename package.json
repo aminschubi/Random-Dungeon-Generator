@@ -35,7 +35,7 @@
     "@types/electron": "^1.6.10",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
-    "@types/node": "~8.9.4",
+    "@types/node": "^8.10.49",
     "codelyzer": "^5.0.0",
     "commonjs": "0.0.1",
     "electron": "^5.0.3",

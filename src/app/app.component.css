@@ -1,17 +1,17 @@
 #mainWindow {
   width: 1040px;
-  height: 715px;
+  height: 750px;
 }
 
 #canvas {
-  border: 10px ridge #000000;
+  border: 10px double #000000;
   float: right;
 }
 
 #controls {
   width: 250px;
-  height: 750px;
-  border: 10px ridge #000000;
+  height: 772px;
+  border: 10px double #000000;
   float: left;
   text-align: center;
 }

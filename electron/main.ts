@@ -1,4 +1,5 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
+import * as fs from 'fs';
 import * as path from 'path'
 import * as url from 'url'
 
@@ -12,8 +13,17 @@ app.on('activate', () => {
     }
 })
 
+ipcMain.on('getFiles', (event, arg) => {
+    const files = fs.readdirSync(__dirname)
+    win.webContents.send('getFilesResponse', files)
+})
+
 function createWindow() {
-    win = new BrowserWindow({ width: 1056, height: 830 });
+    win = new BrowserWindow({
+        width: 1056, height: 830, webPreferences: {
+            nodeIntegration: true
+        }
+    });
 
     win.loadURL(
         url.format({
@@ -24,8 +34,9 @@ function createWindow() {
     );
 
     win.setResizable(false);
+    //win.removeMenu();
 
-    //win.webContents.openDevTools()
+    win.webContents.openDevTools()
 
     win.on('closed', () => {
         win = null;

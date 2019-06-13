@@ -28,6 +28,9 @@ export class GameMap {
     public canvas: any;
     public ySize: number;
     public xSize: number;
+    public xMax: number;
+    public yMax: number;
+    public scale: number;
 
     constructor(
         public roomAmountX: number,
@@ -36,78 +39,92 @@ export class GameMap {
         public roomSpaceX: number,
         public roomSpaceY: number,
         public randomize: boolean,
-        public randomlevel: number
+        public randomlevel: number,
+        loadBlocks?: Block[],
+        scales?: number,
+        xS?: number, yS?: number
     ) {
         this.canvas = document.getElementById("canvas");
-        //@ts-ignore
         if (this.canvas.getContext) {
-            this.totalBlocksX = roomAmountX * (roomSize + 2) + (this.roomAmountX - 1) * roomSpaceX;
-            this.totalBlocksY = roomAmountY * (roomSize + 2) + (this.roomAmountY - 1) * roomSpaceY;
-            this.originalSize = [(roomAmountX * (roomSize + 2)), (roomAmountX * (roomSize + 2))];
             //@ts-ignore
             this.ctx = this.canvas.getContext("2d");
-            let xT = this.totalBlocksX;
-            let yT = this.totalBlocksY;
-
-            //@ts-ignore
-            let cW = this.canvas.width;
-            //@ts-ignore
-            let cH = this.canvas.height;
-            this.xSize = (cW - xT) / xT;
-            this.ySize = (cH - yT) / yT;
-            if (this.xSize > this.ySize) {
-                this.xSize = this.ySize
-            } else if (this.xSize < this.ySize) {
-                this.ySize = this.xSize;
-            }
-            console.log(this.xSize, this.ySize);
         }
+        if (!loadBlocks) {
+            if (this.canvas.getContext) {
+                this.totalBlocksX = roomAmountX * (roomSize + 2) + (this.roomAmountX - 1) * roomSpaceX;
+                this.totalBlocksY = roomAmountY * (roomSize + 2) + (this.roomAmountY - 1) * roomSpaceY;
+                this.originalSize = [(roomAmountX * (roomSize + 2)), (roomAmountX * (roomSize + 2))];
 
-        this.generateBlocks(this.blocks);
-        this.generateRooms();
-        if (!(roomSpaceX == 0 || roomSpaceY == 0)) {
-            this.spreadRooms(this.roomSpaceX, roomSpaceY);
+                let xT = this.totalBlocksX;
+                let yT = this.totalBlocksY;
+
+                //@ts-ignore
+                let cW = this.canvas.width;
+                //@ts-ignore
+                let cH = this.canvas.height;
+                this.xSize = (cW - xT) / xT;
+                this.ySize = (cH - yT) / yT;
+                if (this.xSize > this.ySize) {
+                    this.xSize = this.ySize
+                } else if (this.xSize < this.ySize) {
+                    this.ySize = this.xSize;
+                }
+                console.log(this.xSize, this.ySize);
+            }
+
+
+            this.generateBlocks(this.blocks);
+            this.generateRooms();
+            if (!(roomSpaceX == 0 || roomSpaceY == 0)) {
+                this.spreadRooms(this.roomSpaceX, roomSpaceY);
+            } else {
+                alert("X and/or Y Spread should to be > 0!");
+            }
+
+            if (randomize) {
+                this.randomizeRoomSizes();
+            }
+
+            if (!(roomSpaceX == 0 || roomSpaceY == 0)) {
+                this.rooms.forEach(room => {
+                    room.buildCorridorsNew();
+                });
+            }
+
+            //this.scale map accordingly to remove overhanging blocks after resizing rooms
+            this.xMax = 0;
+            for (let i = this.roomAmountX - 1; i < this.roomAmountX * this.roomAmountY; i += this.roomAmountX) {
+                if (this.rooms[i].walls[1][0].position.x + this.xSize > this.xMax) {
+                    this.xMax = this.rooms[i].walls[1][0].position.x + this.xSize;
+                }
+            }
+            this.yMax = 0;
+            for (let i = (this.roomAmountX * this.roomAmountY) - this.roomAmountX; i < this.roomAmountX * this.roomAmountY; i++) {
+                if (this.rooms[i].walls[2][this.rooms[i].walls[2].length - 1].position.y + this.ySize > this.yMax) {
+                    this.yMax = this.rooms[i].walls[2][this.rooms[i].walls[2].length - 1].position.y + this.ySize;
+                }
+            }
+            this.scale = 1;
+            if (this.xMax > this.yMax) {
+                //@ts-ignore
+                this.scale = this.canvas.width / (this.canvas.width - (this.canvas.width - this.xMax));
+            } else if (this.yMax > this.xMax) {
+                //@ts-ignore
+                this.scale = this.canvas.height / (this.canvas.height - (this.canvas.height - this.yMax));
+            } else if (this.yMax == this.xMax) {
+                this.scale = this.canvas.width / (this.canvas.width - (this.canvas.width - this.xMax));
+            }
+            console.log(this.xMax, this.yMax);
         } else {
-            alert("X and/or Y Spread should to be > 0!");
+            console.log(scales);
+            this.scale = scales;
+            this.blocks = loadBlocks;
+            this.xSize = xS;
+            this.ySize = yS;
         }
 
-        if (randomize) {
-            this.randomizeRoomSizes();
-        }
-
-        if (!(roomSpaceX == 0 || roomSpaceY == 0)) {
-            this.rooms.forEach(room => {
-                room.buildCorridorsNew();
-            });
-        }
-
-        //this.generateItems();
-
-        //Scale map accordingly to remove overhanging blocks after resizing rooms
-        let xMax = 0;
-        for (let i = this.roomAmountX - 1; i < this.roomAmountX * this.roomAmountY; i += this.roomAmountX) {
-            if (this.rooms[i].walls[1][0].position.x + this.xSize > xMax) {
-                xMax = this.rooms[i].walls[1][0].position.x + this.xSize;
-            }
-        }
-        let yMax = 0;
-        for (let i = (this.roomAmountX * this.roomAmountY) - this.roomAmountX; i < this.roomAmountX * this.roomAmountY; i++) {
-            if (this.rooms[i].walls[2][this.rooms[i].walls[2].length - 1].position.y + this.ySize > yMax) {
-                yMax = this.rooms[i].walls[2][this.rooms[i].walls[2].length - 1].position.y + this.ySize;
-            }
-        }
-        let scale = 1;
-        if (xMax > yMax) {
-            //@ts-ignore
-            scale = this.canvas.width / (this.canvas.width - (this.canvas.width - xMax));
-        } else if (yMax > xMax) {
-            //@ts-ignore
-            scale = this.canvas.height / (this.canvas.height - (this.canvas.height - yMax));
-        } else if (yMax == xMax) {
-            scale = this.canvas.height / (this.canvas.height - (this.canvas.height - xMax));
-        }
         //@ts-ignore
-        this.ctx.scale(scale, scale);
+        this.ctx.scale(this.scale, this.scale);
 
         this.drawBlocks(this.blocks);
     }
@@ -116,6 +133,7 @@ export class GameMap {
         console.log("DRAW BLOCKS");
         mapToDraw.forEach(block => {
             let t = new Tile(this.ctx, block.type, this.xSize, this.ySize, block.position.x, block.position.y, block.indexOnMap);
+            console.log(t);
             this.tiles.push(t);
         });
     }
