@@ -27,7 +27,7 @@ function createWindow() {
         slashes: true,
     }));
     win.setResizable(false);
-    win.removeMenu();
+    //win.removeMenu();
     win.webContents.openDevTools();
     win.on('closed', function () {
         win = null;

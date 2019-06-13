@@ -13,9 +13,12 @@ export class AppComponent {
   title = "dungeon-creator";
   openMap: GameMap = null;
   fs: any;
+  dialog: any;
   ngAfterViewInit() {
     //@ts-ignore
     this.fs = window.fs;
+    //@ts-ignore
+    this.dialog = window.dialog;
   }
 
   createMap(roomSize: number, roomAmountX: number, roomAmountY: number, roomSpreadX: number, roomSpreadY: number, randomize: boolean, randomizeValue: number | 0) {
@@ -75,10 +78,20 @@ export class AppComponent {
       }
     });
     json += "\n}";
-    console.log(json);
-    this.fs.writeFile("map.json", json, function (error) {
-      if (error) throw error;
-      console.log("Map written to map.json!");
+    this.dialog.showSaveDialog((fileName) => {
+      if (fileName === undefined) {
+        alert("Filename is undefined!");
+        return;
+      }
+
+      // fileName is a string that contains the path and filename created in the save file dialog.  
+      this.fs.writeFile(fileName, json, (error) => {
+        if (error) {
+          alert("An error ocurred creating the file " + error.message)
+        }
+
+        alert(`Map saved to ${fileName}`);
+      });
     });
   }
 
@@ -130,7 +143,6 @@ export class AppComponent {
           let index = +key.substring(1, key.length - 1);
           var block = new Block(blockMapIndex, indexCounter);
           block.changeType(x[key].value);
-          console.log(block);
           blocks.push(block);
           blockMapIndex = new Point(blockMapIndex.x + xS, blockMapIndex.y);
           j++;
@@ -146,7 +158,6 @@ export class AppComponent {
     this.clearClick(event);
     this.openMap = new GameMap(roomSX, roomSY, 0, 0, 0, false, 0, blocks, s, xS, yS);
 
-    console.log(blocks);
     //console.log(json.keys());
   }
 }
